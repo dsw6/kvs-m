@@ -9,11 +9,10 @@ Items in the store have a expiration time and unused items are automatically rem
 ## Installation
 
 This is a [node.js](https://nodejs.org) module available through the
-[npm registry](https://www.npmjs.com/). Installation is done using the
-[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+[npm registry](https://www.npmjs.com/).
 
 ```sh
-$ npm install kvs-m
+$ npm install @dsw/kvs-m
 ```
 
 ## Store Creation

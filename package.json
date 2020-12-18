@@ -1,5 +1,5 @@
 {
-   "name": "kvs-m",
+   "name": "@dsw/kvs-m",
    "version": "1.0.0",
    "description": "A memory-based Key-Value Store, actively managed with operational metrics",
    "keywords": [
