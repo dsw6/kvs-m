@@ -23,19 +23,19 @@ describe("Store Module Exports", function ()
       //----------------------------------------------------------------------------
    it(`kvs.TYPE should be exported`, function () 
    {
-      expect(kvs.TYPE).to.be.an("object");
-      expect(kvs.TYPE.VOLATILE).to.exist;
-      expect(kvs.TYPE.PERM).to.exist;
+      expect(kvs.ITEM_TYPE).to.be.an("object");
+      expect(kvs.ITEM_TYPE.VOLATILE).to.exist;
+      expect(kvs.ITEM_TYPE.PERM).to.exist;
    });
 
       //----------------------------------------------------------------------------
-   it(`kvs.ERRORS should be exported`, function () 
+   it(`kvs.ERROR_CODE should be exported`, function () 
    {
-      expect(kvs.ERRORS).to.be.an("object");
-      expect(kvs.ERRORS.MAX_SIZE).to.exist;
-      expect(kvs.ERRORS.NOT_FOUND).to.exist;
-      expect(kvs.ERRORS.EXISTS).to.exist;
-      expect(kvs.ERRORS.NO_DEL).to.exist;
+      expect(kvs.ERROR_CODE).to.be.an("object");
+      expect(kvs.ERROR_CODE.MAX_SIZE).to.exist;
+      expect(kvs.ERROR_CODE.NOT_FOUND).to.exist;
+      expect(kvs.ERROR_CODE.ITEM_EXISTS).to.exist;
+      expect(kvs.ERROR_CODE.NO_DELETE).to.exist;
    });
 
 });

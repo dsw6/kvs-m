@@ -45,7 +45,7 @@ describe("Store Upsert", function ()
       expect(error, "prop:error - invalid").to.not.exist;
 
       error = store.upsert("key2", "value2");
-      expect(error.code, "prop:error.code - invalid").to.equal(kvs.ERRORS.MAX_SIZE);
+      expect(error.code, "prop:error.code - invalid").to.equal(kvs.ERROR_CODE.MAX_SIZE);
    });
 
 
@@ -70,12 +70,12 @@ describe("Store Upsert", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.upsert("key1", "value1", kvs.TYPE.VOLATILE);
+      var error = store.upsert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
       expect(error, "prop:error - invalid").to.not.exist;
 
       var vInfo = store.get("key1");
       expect(vInfo.value, "prop:value - invalid").to.equal("value1");
-      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.TYPE.VOLATILE);
+      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.ITEM_TYPE.VOLATILE);
    });
 
 
@@ -89,7 +89,7 @@ describe("Store Upsert", function ()
 
       var vInfo = store.get("key1");
       expect(vInfo.value, "prop:value - invalid").to.equal("value1");
-      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.TYPE.VOLATILE);
+      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.ITEM_TYPE.VOLATILE);
    });
 
 
@@ -103,7 +103,7 @@ describe("Store Upsert", function ()
 
       var vInfo = store.get("key1");
       expect(vInfo.value, "prop:value - invalid").to.equal("value1");
-      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.TYPE.VOLATILE);
+      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.ITEM_TYPE.VOLATILE);
    });
 
       //----------------------------------------------------------------------------
@@ -111,12 +111,12 @@ describe("Store Upsert", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.upsert("key1", "value1", kvs.TYPE.PERM);
+      var error = store.upsert("key1", "value1", kvs.ITEM_TYPE.PERM);
       expect(error, "prop:error - invalid").to.not.exist;
 
       var vInfo = store.get("key1");
       expect(vInfo.value, "prop:value - invalid").to.equal("value1");
-      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.TYPE.PERM);
+      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.ITEM_TYPE.PERM);
    });
 
 });

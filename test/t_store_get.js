@@ -31,7 +31,7 @@ describe("Store Get", function ()
       store.insert("key1", "value1");
 
       var vInfo = store.get("key1");
-      expect(vInfo.err, "prop:error - invalid").to.not.exist;
+      expect(vInfo.error, "prop:error - invalid").to.not.exist;
       expect(vInfo.value, "prop:value - invalid").to.equal("value1");
    });
 
@@ -42,9 +42,9 @@ describe("Store Get", function ()
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
       var vInfo = store.get("key1");
-      expect(vInfo.err, "prop:error - invalid").to.exist;
+      expect(vInfo.error, "prop:error - invalid").to.exist;
       expect(vInfo.value, "prop:value - invalid").to.not.exist;
-      expect(vInfo.err.code, "prop:err.code - invalid").to.equal(kvs.ERRORS.NOT_FOUND);
+      expect(vInfo.error.code, "prop:err.code - invalid").to.equal(kvs.ERROR_CODE.NOT_FOUND);
    });
 
 

@@ -40,11 +40,28 @@ const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
 ## Store Usage
 
-### **<span style="color:blue">Item Types<span>**  
-When items are added to the store, an item type can be specified.  If not specified, the volatile type is used.
+### **<span style="color:blue">KVS Item Types<span>**  
+When items are added to the store, an item type can be specified.  If not specified, the volatile type is used. 
 
-- kvs.TYPE.PERM - permanent item, never removed due to inactivity
-- kvs.TYPE.VOLATILE - volatile item, actively removed due to inactivity
+- `kvs.ITEM_TYPE.PERM` - permanent, item will not time out, delete operation not allowed
+- `kvs.ITEM_TYPE.VOLATILE` - volatile, item will time out, delete operation allowed
+
+### **<span style="color:blue">KVS Errors<span>**  
+Store operations that fail return a `KVSError` object which extends the standard `Error` object.  In addition to the standard error object properties, the KVSError objects has an error `code` property.
+
+```
+{
+   name:  "KVSError",
+   message:  <error message>
+   stack: <error stack>
+   code: <kvs error code>
+}
+```
+Error Codes
+- `kvs.ERROR_CODE.MAX_SIZE` - store max size reached, item cannot be added
+- `kvs.ERROR_CODE.NOT_FOUND` - item not found in store
+- `kvs.ERROR_CODE.ITEM_EXISTS` - item already exists in store
+- `kvs.ERROR_CODE.NO_DELETE` - item cannot be deleted
 
 ### **<span style="color:blue">store.insert(key, value, [type])<span>**  
 Adds an item to the store.  If an item with the key already exists in the store, the add operation fails.  If the store is at max size, an error is returned.
@@ -53,10 +70,10 @@ Adds an item to the store.  If an item with the key already exists in the store,
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.TYPE.VOLATILE);
+var err = store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
 
    // error, item already exists
-err = store.insert("key1", "value2", kvs.TYPE.VOLATILE);
+err = store.insert("key1", "value2", kvs.ITEM_TYPE.VOLATILE);
 ```
 
 ### **<span style="color:blue">store.upsert(key, value, [type])<span>**  
@@ -66,21 +83,31 @@ Adds/replaces an item to the store.  If an item with the key already exists in t
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.TYPE.PERM);
+var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
 
    // no error, item replaced
 err = store.upsert("key1", "value2");
 ```
 
 ### **<span style="color:blue">store.get(key)<span>**  
-Returns the store item identified by the key.
+Returns an information object which includes: the value, the type, and an error, if an error occured.
+```
+{
+   error: <kvsError>    // KVSError, undefined if no error
+   value: <item>        // the item value, undefined if an error occurrs
+   type: <item type>    // the item type, undefined if an error occurrs
+}
+```
 
 ```javascript
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.TYPE.PERM);
-var item = store.get("key1");  // item = "value1"
+var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
+var info = store.get("key1");  // item = "value1"
+
+if (!info.error)
+   console.log(info.value);
 ```
 
 ### **<span style="color:blue">store.del(key)<span>**  
@@ -90,25 +117,25 @@ Deletes the store item identified by the key.
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.TYPE.PERM);
+var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
 err = store.del("key1");
 ```
 
 ### **<span style="color:blue">store.clear()<span>**  
-Removes all items in the store.  Items with a type of **"kvs.TYPE.PERM"** are not removed.
+Removes all items in the store.  Items with a type of `kvs.ITEM_TYPE.PERM` are not removed.
 
 ```javascript
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.TYPE.VOLATILE);
-var err = store.insert("key2", "value2", kvs.TYPE.PERM);
+var err = store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
+var err = store.insert("key2", "value2", kvs.ITEM_TYPE.PERM);
 err = store.clear();
    // "key2" still exists in the store
 ```
 
 ### **<span style="color:blue">store.metrics()<span>**  
-The store collects metrics on store size and operation.  The operation metrics are reset each time the metrics are queried.
+Information about the number of items in the store and operations.  The operation counters (insert, upsert, etc.) are the number of operations since the last metrics call.  The counters are reset with each call.
 
 Example Response:
 ```
