@@ -32,7 +32,7 @@ describe("Store Idle Reaper Event", function ()
       await sleep(5000);
 
       var vInfo = store.get("key1");
-      expect(vInfo.err.code, "prop:err - invalid").to.equal(kvs.ERRORS.NOT_FOUND);
+      expect(vInfo.error.code, "prop:err - invalid").to.equal(kvs.ERROR_CODE.NOT_FOUND);
 
       var info = store.info();
       expect(info.size, "prop:size - invalid").to.equal(0);
@@ -50,7 +50,7 @@ describe("Store Idle Reaper Event", function ()
       await sleep(200);
 
       var vInfo = store.get("key1");
-      expect(vInfo.err.code, "prop:err - invalid").to.equal(kvs.ERRORS.NOT_FOUND);
+      expect(vInfo.error.code, "prop:err - invalid").to.equal(kvs.ERROR_CODE.NOT_FOUND);
 
       var info = store.info();
       expect(info.size, "prop:size - invalid").to.equal(1);
@@ -68,16 +68,16 @@ describe("Store Idle Reaper Event", function ()
          // twice, item should be present
       await sleep(200);
       var vInfo = store.get("key1");
-      expect(vInfo.err).to.not.exist;
+      expect(vInfo.error).to.not.exist;
 
       await sleep(200);
       var vInfo = store.get("key1");
-      expect(vInfo.err).to.not.exist;
+      expect(vInfo.error).to.not.exist;
 
          // sleep longer than itemTTL, should not be found
       await sleep(500)
       var vInfo = store.get("key1");
-      expect(vInfo.err.code).to.equal(kvs.ERRORS.NOT_FOUND);
+      expect(vInfo.error.code).to.equal(kvs.ERROR_CODE.NOT_FOUND);
 
    });
 

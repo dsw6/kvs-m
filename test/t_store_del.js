@@ -42,10 +42,10 @@ describe("Store Delete", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      store.insert("key1", "value", kvs.TYPE.PERM);
+      store.insert("key1", "value", kvs.ITEM_TYPE.PERM);
 
       var error = store.del("key1");
-      expect(error.code, "error.code - invalid").to.equal(kvs.ERRORS.NO_DEL);
+      expect(error.code, "error.code - invalid").to.equal(kvs.ERROR_CODE.NO_DELETE);
    });
 
 
@@ -55,7 +55,7 @@ describe("Store Delete", function ()
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
       var error = store.del("key1");
-      expect(error.code, "error.code - invalid").to.equal(kvs.ERRORS.NOT_FOUND);
+      expect(error.code, "error.code - invalid").to.equal(kvs.ERROR_CODE.NOT_FOUND);
    });
 
 
@@ -64,7 +64,7 @@ describe("Store Delete", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      store.insert("key1", "value", kvs.TYPE.VOLATILE);
+      store.insert("key1", "value", kvs.ITEM_TYPE.VOLATILE);
 
       var error = store.del("key1");
       expect(error, "error - invalid").to.not.exist;

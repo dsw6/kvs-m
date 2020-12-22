@@ -47,9 +47,9 @@ describe("Store Clear", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      store.insert("key1", "value", kvs.TYPE.PERM);
-      store.insert("key2", "value", kvs.TYPE.PERM);
-      store.insert("key3", "value", kvs.TYPE.VOLATILE);
+      store.insert("key1", "value", kvs.ITEM_TYPE.PERM);
+      store.insert("key2", "value", kvs.ITEM_TYPE.PERM);
+      store.insert("key3", "value", kvs.ITEM_TYPE.VOLATILE);
 
       var error = store.clear();
 
