@@ -172,7 +172,7 @@ Example Response:
 
 The project uses the [debug package](https://www.npmjs.com/package/debug) which will log information to console.error.
 
-The package uses the debug prefix `kvs-m`.  To enable the debug messages for all components, use the wildcard format when setting the DEBUG environment constiable:
+The package uses the debug prefix `kvs-m`.  
 
 ```sh
 $ DEBUG=kvs-m node yourApp.js 
