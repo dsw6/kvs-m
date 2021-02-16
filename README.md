@@ -64,16 +64,14 @@ Error Codes
 - `kvs.ERROR_CODE.NO_DELETE` - item cannot be deleted
 
 ### **<span style="color:blue">store.insert(key, value, [type])<span>**  
-Adds an item to the store.  If an item with the key already exists in the store, the add operation fails.  If the store is at max size, an error is returned.
+Adds an item to the store.  If an item with the key already exist in the store, an error is returned .  If the store is at max size, an error is returned.
 
 ```javascript
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
-
-   // error, item already exists
-err = store.insert("key1", "value2", kvs.ITEM_TYPE.VOLATILE);
+store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
+store.insert("key2", "value2", kvs.ITEM_TYPE.PERM);
 ```
 
 ### **<span style="color:blue">store.upsert(key, value, [type])<span>**  
@@ -83,19 +81,20 @@ Adds/replaces an item to the store.  If an item with the key already exists in t
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
+   // item is added
+store.upsert("key1", "value1");
 
-   // no error, item replaced
-err = store.upsert("key1", "value2");
+   // item replaced
+store.upsert("key1", "value2");
 ```
 
 ### **<span style="color:blue">store.get(key)<span>**  
 Returns an information object which includes: the value, the type, and an error, if an error occured.
 ```
 {
-   error: <kvsError>    // KVSError, undefined if no error
-   value: <item>        // the item value, undefined if an error occurrs
-   type: <item type>    // the item type, undefined if an error occurrs
+   error:   <kvsError>     // KVSError, undefined if no error
+   value:   <item>         // the item value, undefined if an error occurrs
+   type:    <item type>    // the item type, undefined if an error occurrs
 }
 ```
 
@@ -103,11 +102,48 @@ Returns an information object which includes: the value, the type, and an error,
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
-var info = store.get("key1");  // item = "value1"
+store.insert("key1", "value1");
+var info = store.get("key1");  
 
-if (!info.error)
-   console.log(info.value);
+console.log(info.value);   // "value1"
+console.log(info.type);    // kvs.ITEM_TYPE.VOLATILE
+```
+
+### **<span style="color:blue">store.entries()<span>**  
+Returns a new Iterator object that can be used to enumerate all the items in the store.  Items added to the store after the Iterator is created will not be returned by the Iterator.  Expired items in the store will not returned by the Iterator.  The Iterator returns objects with the format:
+```
+{
+   key:     <key>       // key value
+   value:   <item>      // the item value, undefined if an error occurrs
+   type:    <type>      // the item type, undefined if an error occurrs
+}
+```
+
+```javascript
+const kvs = require('kvs-m');
+const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
+
+store.insert("key1", "value1");
+store.insert("key2", "value2");
+
+var iterator = store.entries();
+
+var item = iterator.next().value;
+console.log(value); // {key: "key1, value: "value1", type: <kvs.ITEM_TYPE.VOLATILE> }
+```
+
+### **<span style="color:blue">store[Symbol.iterator]<span>**  
+Returns a store iterator function, which is the store.entries() function.  This supports enumarting store entries using the for..of loop construct.
+
+```javascript
+const kvs = require('kvs-m');
+const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
+
+store.insert("key1", "value1");
+store.insert("key2", "value2");
+
+for (let item of store)
+   console.log(value); 
 ```
 
 ### **<span style="color:blue">store.del(key)<span>**  
@@ -117,8 +153,8 @@ Deletes the store item identified by the key.
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
-err = store.del("key1");
+store.insert("key1", "value1");
+var err = store.del("key1");
 ```
 
 ### **<span style="color:blue">store.clear()<span>**  
@@ -128,8 +164,8 @@ Removes all items in the store.  Items with a type of `kvs.ITEM_TYPE.PERM` are n
 const kvs = require('kvs-m');
 const store = kvs({name: "myStore", maxSize: 500, itemTTL: 20000});
 
-var err = store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
-var err = store.insert("key2", "value2", kvs.ITEM_TYPE.PERM);
+store.insert("key1", "value1", kvs.ITEM_TYPE.VOLATILE);
+store.insert("key2", "value2", kvs.ITEM_TYPE.PERM);
 err = store.clear();
    // "key2" still exists in the store
 ```
