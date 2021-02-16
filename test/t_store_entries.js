@@ -44,19 +44,21 @@ describe("Store Entries", function ()
 
 
       //----------------------------------------------------------------------------
-   it(`iterator.next() should set value=[key, value] array`, function () 
+   it(`iterator.next() should set value={key, value, type} object`, function () 
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
 
       var iterator = store.entries();
-      var item = iterator.next();
-      expect(item.value).to.be.an("array");
-      expect(item.done).to.equal(false);
-      expect(item.value[0]).to.equal("key1");
-      expect(item.value[1]).to.equal("value1");
+      var resp = iterator.next();
+      expect(resp.value).to.be.an("object");
+      expect(resp.done).to.equal(false);
+
+      var item = resp.value;
+      expect(item.key).to.equal("key1");
+      expect(item.value).to.equal("value1");
+      expect(item.type).to.equal(kvs.ITEM_TYPE.VOLATILE);
    });
 
 
@@ -66,34 +68,47 @@ describe("Store Entries", function ()
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
       var iterator = store.entries();
-      var item = iterator.next();
-      expect(item.value).to.be.equal(undefined);
-      expect(item.done).to.equal(true);
+      var resp = iterator.next();
+      expect(resp.value).to.be.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
 
       //----------------------------------------------------------------------------
    it(`iterator.next() should work with multipe values in store`, function () 
    {
-      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
+      var count = 100;
+      var keys = [];
+      var values = [];
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
+      var store = kvs({name: "myStore", maxSize: 200, itemTTL: 5000});
 
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      for (let i=0; i<count; i++)
+      {
+         let key = `key${i}`;
+         let value = `value${i}`;
+         store.insert(key, value);
+         keys.push(key);
+         values.push(value);
+      }
 
       var iterator = store.entries();
+      var resp = iterator.next();
 
-      var item = iterator.next();
-      expect(item.value[0]).to.equal("key1");
-      expect(item.value[1]).to.equal("value1");
-      expect(item.done).to.equal(false);
+      var iterCount = 0;
+      var item = resp.value;
+      while (item)
+      {
+         iterCount++;
+         expect(keys).to.contain(item.key);
+         expect(values).to.contain(item.value);
+         expect(item.type).to.equal(kvs.ITEM_TYPE.VOLATILE);
 
-      var item = iterator.next();
-      expect(item.value[0]).to.equal("key2");
-      expect(item.value[1]).to.equal("value2");
-      expect(item.done).to.equal(false);
+         resp = iterator.next();
+         item = resp.value;
+      } 
+
+      expect(iterCount).to.equal(count);
    });
 
 
@@ -102,19 +117,15 @@ describe("Store Entries", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
 
       var iterator = store.entries();
-
-      var item = iterator.next();
-      var item = iterator.next();
-      var item = iterator.next();
-      expect(item.value).to.equal(undefined);
-      expect(item.done).to.equal(true);
+      var resp = iterator.next();
+      resp = iterator.next();
+      resp = iterator.next();
+      expect(resp.value).to.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
 
@@ -123,23 +134,22 @@ describe("Store Entries", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
 
       var iterator = store.entries();
-      error = store.del("key1");
+      store.del("key1");
 
-      var item = iterator.next();
-      expect(item.value[0]).to.equal("key2");
-      expect(item.value[1]).to.equal("value2");
-      expect(item.done).to.equal(false);
+      var resp = iterator.next();
+      expect(resp.done).to.equal(false);
 
-      var item = iterator.next();
-      expect(item.value).to.equal(undefined);
-      expect(item.done).to.equal(true);
+      var item = resp.value;
+      expect(item.key).to.equal("key2");
+      expect(item.value).to.equal("value2");
+
+      resp = iterator.next();
+      expect(resp.value).to.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
 
@@ -148,19 +158,16 @@ describe("Store Entries", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
 
       var iterator = store.entries();
-      error = store.del("key1");
-      error = store.del("key2");
+      store.del("key1");
+      store.del("key2");
 
-      var item = iterator.next();
-      expect(item.value).to.equal(undefined);
-      expect(item.done).to.equal(true);
+      var resp = iterator.next();
+      expect(resp.value).to.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
          //----------------------------------------------------------------------------
@@ -168,25 +175,22 @@ describe("Store Entries", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-         // short sleep to allow item to expire, but not for reaper to trigger
-      await sleep(250);
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      await sleep(250);  // short sleep to allow item to expire, but not for reaper to trigger
+      store.insert("key2", "value2");
 
       var iterator = store.entries();
 
-      var item = iterator.next();
-      expect(item.value[0]).to.equal("key2");
-      expect(item.value[1]).to.equal("value2");
-      expect(item.done).to.equal(false);
+      var resp = iterator.next();
+      expect(resp.done).to.equal(false);
 
-      var item = iterator.next();
-      expect(item.value).to.equal(undefined);
-      expect(item.done).to.equal(true);
+      var item = resp.value;
+      expect(item.key).to.equal("key2");
+      expect(item.value).to.equal("value2");
+
+      resp = iterator.next();
+      expect(resp.value).to.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
 
@@ -195,20 +199,17 @@ describe("Store Entries", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
 
          // short sleep to allow item to expire, but not for reaper to trigger
       await sleep(250);
 
       var iterator = store.entries();
 
-      var item = iterator.next();
-      expect(item.value).to.equal(undefined);
-      expect(item.done).to.equal(true);
+      var resp = iterator.next();
+      expect(resp.value).to.equal(undefined);
+      expect(resp.done).to.equal(true);
    });
 
 });

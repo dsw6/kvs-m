@@ -44,7 +44,7 @@ describe("Store [Symbol.iterator]", function ()
 
 
       //----------------------------------------------------------------------------
-   it(`iterator should return [key, value] array`, function () 
+   it(`iterator should return object: {key, value, type}`, function () 
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
@@ -53,9 +53,9 @@ describe("Store [Symbol.iterator]", function ()
 
       for (let item of store)
       {
-         expect(item).to.be.an("array");
-         expect(item[0]).to.equal("key1");
-         expect(item[1]).to.equal("value1");
+         expect(item.key).to.equal("key1");
+         expect(item.value).to.equal("value1");
+         expect(item.type).to.equal(kvs.ITEM_TYPE.VOLATILE);
       }
    });
 
@@ -75,40 +75,31 @@ describe("Store [Symbol.iterator]", function ()
       //----------------------------------------------------------------------------
    it(`iterator should work with multipe values in store`, function () 
    {
-      var keys = ["key1", "key2"];
-      var values = ["value1", "value2"];
-      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
+      var count = 100;
+      var keys = [];
+      var values = [];
 
-      var error = store.insert(keys[0], values[0]);
-      expect(error, "prop:error - invalid").to.not.exist;
+      var store = kvs({name: "myStore", maxSize: 200, itemTTL: 5000});
 
-      var error = store.insert(keys[1], values[1]);
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      for (let [key, value] of store)
+      for (let i=0; i<count; i++)
       {
+         let key = `key${i}`;
+         let value = `value${i}`;
+         store.insert(key, value);
+         keys.push(key);
+         values.push(value);
+      }
+
+      var iterCount = 0;
+      for (let {key, value, type} of store)
+      {
+         iterCount++;
          expect(keys).to.contain(key);
          expect(values).to.contain(value);
+         expect(type).to.equal(kvs.ITEM_TYPE.VOLATILE);
       }
-   });
 
-
-      //----------------------------------------------------------------------------
-   it(`iterator should return correct number of items`, function () 
-   {
-      var count=0;
-      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
-
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      for (let item of store)
-         count++;
-
-      expect(count).to.equal(2);
+      expect(iterCount).to.equal(count);      
    });
 
 
@@ -117,18 +108,15 @@ describe("Store [Symbol.iterator]", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
+      store.del("key1");
 
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      error = store.del("key1");
-
-      for (let [key, value] of store)
+      for (let {key, value, type} of store)
       {
          expect(key).to.not.equal("key1");
          expect(value).to.not.equal("value1");
+         expect(type).to.equal(kvs.ITEM_TYPE.VOLATILE);
       }
    });
 
@@ -139,14 +127,10 @@ describe("Store [Symbol.iterator]", function ()
       var count = 0;
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 5000});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      error = store.del("key1");
-      error = store.del("key2");
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
+      store.del("key1");
+      store.del("key2");
 
       for (let item of store)
          count++;
@@ -159,19 +143,15 @@ describe("Store [Symbol.iterator]", function ()
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      await sleep(250); // short sleep to allow item to expire, but not for reaper to trigger
+      store.insert("key2", "value2");
 
-         // short sleep to allow item to expire, but not for reaper to trigger
-      await sleep(250);
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      for (let [key, value] of store)
+      for (let {key, value, type} of store)
       {
          expect(key).to.not.equal("key1")
          expect(value).to.not.equal("value1");
+         expect(type).to.equal(kvs.ITEM_TYPE.VOLATILE);
       }
    });
 
@@ -182,11 +162,8 @@ describe("Store [Symbol.iterator]", function ()
       var count=0;
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
-      var error = store.insert("key1", "value1");
-      expect(error, "prop:error - invalid").to.not.exist;
-
-      var error = store.insert("key2", "value2");
-      expect(error, "prop:error - invalid").to.not.exist;
+      store.insert("key1", "value1");
+      store.insert("key2", "value2");
 
          // short sleep to allow item to expire, but not for reaper to trigger
       await sleep(250);
