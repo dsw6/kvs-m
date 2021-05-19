@@ -144,7 +144,7 @@ describe("Store [Symbol.iterator]", function ()
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
       store.insert("key1", "value1");
-      await sleep(250); // short sleep to allow item to expire, but not for reaper to trigger
+      await sleep(300); // short sleep to allow item to expire, but not for reaper to trigger
       store.insert("key2", "value2");
 
       for (let {key, value, type} of store)
@@ -166,12 +166,37 @@ describe("Store [Symbol.iterator]", function ()
       store.insert("key2", "value2");
 
          // short sleep to allow item to expire, but not for reaper to trigger
-      await sleep(250);
+      await sleep(300);
 
       for (let item of store)
          count++;
       
       expect(count).to.equal(0);
+   });
+
+
+         //----------------------------------------------------------------------------
+   it(`iterator should return permanent times`, async function () 
+   {
+      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
+
+      store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
+      store.insert("key2", "value2");
+
+         // short sleep to allow items to expire
+      await sleep(250);
+
+      var itemCnt = 0;
+
+      for (let {key, value, type} of store)
+      {
+         itemCnt++;
+         expect(key).to.equal("key1")
+         expect(value).to.equal("value1");
+         expect(type).to.equal(kvs.ITEM_TYPE.PERM);
+      }
+
+      expect(itemCnt, "Permanent item not found").to.equal(1);
    });
 
 });

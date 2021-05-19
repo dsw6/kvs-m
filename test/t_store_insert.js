@@ -104,7 +104,7 @@ describe("Store Insert", function ()
    });
 
       //----------------------------------------------------------------------------
-   it(`store.insert should support permanente item types`, function () 
+   it(`store.insert should support permanent item types`, function () 
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
 
