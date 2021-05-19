@@ -194,7 +194,7 @@ describe("Store Entries", function ()
    });
 
 
-         //----------------------------------------------------------------------------
+      //----------------------------------------------------------------------------
    it(`iterator.next() should skip all expired items`, async function () 
    {
       var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
@@ -210,6 +210,29 @@ describe("Store Entries", function ()
       var resp = iterator.next();
       expect(resp.value).to.equal(undefined);
       expect(resp.done).to.equal(true);
+   });
+
+
+      //----------------------------------------------------------------------------
+   it(`iterator.next() should return permanent items`, async function () 
+   {
+      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
+
+      store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
+      store.insert("key2", "value2");
+
+         // short sleep to allow items to expire
+      await sleep(250);
+
+      var iterator = store.entries();
+
+      var resp = iterator.next();
+      expect(resp.done, "iterator returned done").to.equal(false);
+
+      var item = resp.value;
+      expect(item.key).to.equal("key1");
+      expect(item.value).to.equal("value1");
+      expect(item.type).to.equal(kvs.ITEM_TYPE.PERM);      
    });
 
 });

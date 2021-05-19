@@ -9,6 +9,13 @@
 const expect = require("chai").expect;
 const kvs = require("../lib/store");
 
+// ---- pause n milliseconds, ex: await sleep(1000)
+function sleep(ms)
+{
+   return( new Promise(pSleep) );
+   function pSleep(resolve) { setTimeout(resolve, ms); };
+}
+
 
 describe("Store Get", function () 
 {
@@ -55,6 +62,27 @@ describe("Store Get", function ()
       expect(vInfo.error.code, "prop:err.code - invalid").to.equal(kvs.ERROR_CODE.NOT_FOUND);
       expect(vInfo.value, "prop:value - invalid").to.equal(undefined);
       expect(vInfo.type, "prop:type - invalid").to.equal(undefined);
+   });
+
+
+      //----------------------------------------------------------------------------
+   it(`store.get should return permanent items, they don't expire`, async function () 
+   {
+      var store = kvs({name: "myStore", maxSize: 100, itemTTL: 100});
+
+      store.insert("key1", "value1", kvs.ITEM_TYPE.PERM);
+
+         // short sleep to allow item TTL to pass
+      await sleep(300);
+
+      var vInfo = store.get("key1");
+      expect(vInfo, "prop:error - not found").to.haveOwnProperty("error");
+      expect(vInfo, "prop:value - not found").to.haveOwnProperty("value");
+      expect(vInfo, "prop:type - not found").to.haveOwnProperty("type");
+
+      expect(vInfo.error, "prop:error - invalid").to.equal(undefined);
+      expect(vInfo.value, "prop:value - invalid").to.equal("value1");
+      expect(vInfo.type, "prop:type - invalid").to.equal(kvs.ITEM_TYPE.PERM);
    });
 
 
